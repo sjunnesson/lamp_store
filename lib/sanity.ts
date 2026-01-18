@@ -3,9 +3,9 @@ import { createImageUrlBuilder } from '@sanity/image-url';
 import type { SanityImageSource } from '@sanity/image-url';
 
 // Sanity client configuration
-const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
-const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production';
-const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2026-01-17';
+const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID?.trim();
+const dataset = (process.env.NEXT_PUBLIC_SANITY_DATASET || 'production').trim();
+const apiVersion = (process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2026-01-17').trim();
 
 // Validate required environment variables
 if (!projectId) {
@@ -13,6 +13,13 @@ if (!projectId) {
     'Missing required environment variable: NEXT_PUBLIC_SANITY_PROJECT_ID\n' +
     'Please create a .env.local file with your Sanity project ID.\n' +
     'Get your project ID from https://www.sanity.io/manage'
+  );
+}
+
+// Validate project ID format (only a-z, 0-9, and dashes)
+if (!/^[a-z0-9-]+$/.test(projectId)) {
+  throw new Error(
+    `Invalid Sanity project ID format: "${projectId}". Project ID can only contain lowercase letters, numbers, and dashes.`
   );
 }
 
