@@ -3,12 +3,12 @@ import Stripe from 'stripe';
 
 // Initialize Stripe lazily to avoid build-time errors
 function getStripe() {
-  const secretKey = process.env.STRIPE_SECRET_KEY;
+  const secretKey = process.env.STRIPE_SECRET_KEY?.trim();
   if (!secretKey) {
     throw new Error('STRIPE_SECRET_KEY is not configured');
   }
   return new Stripe(secretKey, {
-    apiVersion: '2025-12-15.clover', // Use latest stable API version
+    apiVersion: '2024-11-20.acacia', // Use stable API version
   });
 }
 
