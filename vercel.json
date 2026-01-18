@@ -1,0 +1,19 @@
+{
+  "rewrites": [
+    {
+      "source": "/studio/:path*",
+      "destination": "/studio/:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/studio/:path*.(js|css|mjs|woff|woff2|ttf|eot|png|jpg|jpeg|gif|svg|ico)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ]
+}
