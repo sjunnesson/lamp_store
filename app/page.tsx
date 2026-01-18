@@ -17,6 +17,8 @@ export default function Home() {
         setProducts(fetchedProducts)
       } catch (error) {
         console.error('Error fetching products:', error)
+        // Set empty array on error to prevent page crash
+        setProducts([])
       } finally {
         setLoading(false)
       }

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useLightStore } from '@/store/useLightStore'
 import { Product } from '@/lib/sanity'
 
@@ -9,6 +10,49 @@ interface ProductInfoProps {
 
 export default function ProductInfo({ product }: ProductInfoProps) {
   const isLightOn = useLightStore((state) => state.isLightOn)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleBuyNow = async () => {
+    if (!product.stripePriceId) {
+      alert('Product is not available for purchase. Missing Stripe Price ID.')
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      const response = await fetch('/api/ucp/checkout-sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          line_items: [
+            {
+              price_id: product.stripePriceId,
+              quantity: 1,
+            },
+          ],
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create checkout session')
+      }
+
+      if (data.action_url) {
+        window.location.href = data.action_url
+      } else {
+        throw new Error('No checkout URL received')
+      }
+    } catch (error) {
+      console.error('Checkout error:', error)
+      alert(error instanceof Error ? error.message : 'Failed to start checkout. Please try again.')
+      setIsLoading(false)
+    }
+  }
 
   return (
     <div className={`border-2 border-black shadow-hard p-6 ${
@@ -89,12 +133,16 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       <hr className="border-black border-t-2 mb-6" />
 
       {/* BUY Button */}
-      <button className={`w-full border-2 border-black rounded-none font-mono font-bold uppercase py-4 transition-colors ${
-        isLightOn 
-          ? 'bg-black text-white hover:bg-white hover:text-black' 
-          : 'bg-white text-black hover:bg-black hover:text-white'
-      }`}>
-        BUY NOW ↗
+      <button 
+        onClick={handleBuyNow}
+        disabled={isLoading || !product.stripePriceId}
+        className={`w-full border-2 border-black rounded-none font-mono font-bold uppercase py-4 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+          isLightOn 
+            ? 'bg-black text-white hover:bg-white hover:text-black' 
+            : 'bg-white text-black hover:bg-black hover:text-white'
+        }`}
+      >
+        {isLoading ? 'PROCESSING...' : 'BUY NOW ↗'}
       </button>
     </div>
   )

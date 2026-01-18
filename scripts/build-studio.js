@@ -27,11 +27,31 @@ if (fs.existsSync(studioDistPath)) {
   fs.rmSync(studioDistPath, { recursive: true, force: true })
 }
 
+// Create a safe environment object with only necessary variables
+// Sanity Studio only embeds SANITY_STUDIO_* prefixed variables, but we'll be explicit
+const safeEnv = {
+  // Preserve system environment variables needed for the build
+  PATH: process.env.PATH,
+  NODE_ENV: process.env.NODE_ENV || 'production',
+  // Only include SANITY_STUDIO_* variables (these are safe to expose)
+  ...(process.env.SANITY_STUDIO_PROJECT_ID && {
+    SANITY_STUDIO_PROJECT_ID: process.env.SANITY_STUDIO_PROJECT_ID
+  }),
+  ...(process.env.SANITY_STUDIO_DATASET && {
+    SANITY_STUDIO_DATASET: process.env.SANITY_STUDIO_DATASET
+  }),
+  ...(process.env.SANITY_STUDIO_API_VERSION && {
+    SANITY_STUDIO_API_VERSION: process.env.SANITY_STUDIO_API_VERSION
+  }),
+  // Explicitly exclude secrets - these should NEVER be passed to Studio build
+  // SANITY_API_TOKEN is intentionally NOT included
+}
+
 // Run sanity build (auto-answer Y to delete prompt)
 console.log('Building Sanity Studio...')
 execSync('echo "Y" | npx sanity build studio-dist', { 
   stdio: 'inherit',
-  env: { ...process.env }
+  env: safeEnv
 })
 
 console.log('Studio build complete!')

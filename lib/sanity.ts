@@ -3,32 +3,50 @@ import { createImageUrlBuilder } from '@sanity/image-url';
 import type { SanityImageSource } from '@sanity/image-url';
 
 // Sanity client configuration
-const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID?.trim();
-const dataset = (process.env.NEXT_PUBLIC_SANITY_DATASET || 'production').trim();
-const apiVersion = (process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2026-01-17').trim();
+function getSanityConfig() {
+  const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID?.trim();
+  const dataset = (process.env.NEXT_PUBLIC_SANITY_DATASET || 'production').trim();
+  const apiVersion = (process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2026-01-17').trim();
 
-// Validate required environment variables
-if (!projectId) {
-  throw new Error(
-    'Missing required environment variable: NEXT_PUBLIC_SANITY_PROJECT_ID\n' +
-    'Please create a .env.local file with your Sanity project ID.\n' +
-    'Get your project ID from https://www.sanity.io/manage'
-  );
+  // Validate required environment variables
+  if (!projectId) {
+    throw new Error(
+      'Missing required environment variable: NEXT_PUBLIC_SANITY_PROJECT_ID\n' +
+      'Please create a .env.local file with your Sanity project ID.\n' +
+      'Get your project ID from https://www.sanity.io/manage'
+    );
+  }
+
+  // Validate project ID format (only a-z, 0-9, and dashes)
+  if (!/^[a-z0-9-]+$/.test(projectId)) {
+    throw new Error(
+      `Invalid Sanity project ID format: "${projectId}". Project ID can only contain lowercase letters, numbers, and dashes.`
+    );
+  }
+
+  return { projectId, dataset, apiVersion };
 }
 
-// Validate project ID format (only a-z, 0-9, and dashes)
-if (!/^[a-z0-9-]+$/.test(projectId)) {
-  throw new Error(
-    `Invalid Sanity project ID format: "${projectId}". Project ID can only contain lowercase letters, numbers, and dashes.`
-  );
+// Create client instance lazily to avoid build-time errors
+let _client: ReturnType<typeof createClient> | null = null;
+
+function getClient() {
+  if (!_client) {
+    const config = getSanityConfig();
+    _client = createClient({
+      projectId: config.projectId,
+      dataset: config.dataset,
+      useCdn: process.env.NODE_ENV === 'production',
+      apiVersion: config.apiVersion,
+    });
+  }
+  return _client;
 }
 
-// Create client instance
-export const client = createClient({
-  projectId,
-  dataset,
-  useCdn: process.env.NODE_ENV === 'production',
-  apiVersion,
+export const client = new Proxy({} as ReturnType<typeof createClient>, {
+  get(_, prop) {
+    return getClient()[prop as keyof ReturnType<typeof createClient>];
+  }
 });
 
 // Image URL builder
@@ -86,14 +104,24 @@ export async function getProducts(): Promise<Product[]> {
 
   const products = await client.fetch<Product[]>(query);
 
-  // Map image URLs correctly
+  // Map image URLs with optimization settings
   return products.map((product) => ({
     ...product,
     imageOffUrl: product.imageOff
-      ? urlFor(product.imageOff).width(800).height(800).url()
+      ? urlFor(product.imageOff)
+          .width(800)
+          .height(800)
+          .auto('format') // Automatically serve WebP/AVIF when supported
+          .quality(85) // Good balance between quality and file size
+          .url()
       : undefined,
     imageOnUrl: product.imageOn
-      ? urlFor(product.imageOn).width(800).height(800).url()
+      ? urlFor(product.imageOn)
+          .width(800)
+          .height(800)
+          .auto('format')
+          .quality(85)
+          .url()
       : undefined,
   }));
 }
@@ -116,14 +144,24 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 
   if (!product) return null;
 
-  // Map image URLs correctly
+  // Map image URLs with optimization settings
   return {
     ...product,
     imageOffUrl: product.imageOff
-      ? urlFor(product.imageOff).width(1200).height(1200).url()
+      ? urlFor(product.imageOff)
+          .width(1200)
+          .height(1200)
+          .auto('format') // Automatically serve WebP/AVIF when supported
+          .quality(90) // Higher quality for detail pages
+          .url()
       : undefined,
     imageOnUrl: product.imageOn
-      ? urlFor(product.imageOn).width(1200).height(1200).url()
+      ? urlFor(product.imageOn)
+          .width(1200)
+          .height(1200)
+          .auto('format')
+          .quality(90)
+          .url()
       : undefined,
   };
 }
