@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useLightStore } from '@/store/useLightStore'
 import Lightbox from './Lightbox'
 
 interface ImageCarouselProps {
@@ -12,6 +13,7 @@ interface ImageCarouselProps {
 export default function ImageCarousel({ images, alt }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
+  const isLightOn = useLightStore((state) => state.isLightOn)
 
   if (!images || images.length === 0) return null
 
@@ -40,7 +42,9 @@ export default function ImageCarousel({ images, alt }: ImageCarouselProps) {
       <div className="relative w-full">
         {/* Main Image Display */}
         <div 
-          className="relative aspect-square w-full overflow-hidden border-2 border-black bg-white cursor-pointer"
+          className={`relative aspect-square w-full overflow-hidden border-2 border-black cursor-pointer ${
+            isLightOn ? 'bg-white' : 'bg-black'
+          }`}
           onClick={openLightbox}
         >
           <AnimatePresence mode="wait">
@@ -64,7 +68,11 @@ export default function ImageCarousel({ images, alt }: ImageCarouselProps) {
                 e.stopPropagation()
                 goToPrevious()
               }}
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white border-2 border-black px-3 py-2 font-mono font-bold uppercase text-sm hover:bg-black hover:text-white transition-colors z-10"
+              className={`absolute left-2 top-1/2 -translate-y-1/2 border-2 border-black px-3 py-2 font-mono font-bold uppercase text-sm transition-colors z-10 ${
+                isLightOn 
+                  ? 'bg-white text-black hover:bg-black hover:text-white' 
+                  : 'bg-black text-white hover:bg-white hover:text-black'
+              }`}
               aria-label="Previous image"
             >
               ←
@@ -74,7 +82,11 @@ export default function ImageCarousel({ images, alt }: ImageCarouselProps) {
                 e.stopPropagation()
                 goToNext()
               }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white border-2 border-black px-3 py-2 font-mono font-bold uppercase text-sm hover:bg-black hover:text-white transition-colors z-10"
+              className={`absolute right-2 top-1/2 -translate-y-1/2 border-2 border-black px-3 py-2 font-mono font-bold uppercase text-sm transition-colors z-10 ${
+                isLightOn 
+                  ? 'bg-white text-black hover:bg-black hover:text-white' 
+                  : 'bg-black text-white hover:bg-white hover:text-black'
+              }`}
               aria-label="Next image"
             >
               →
@@ -84,7 +96,9 @@ export default function ImageCarousel({ images, alt }: ImageCarouselProps) {
 
         {/* Image Counter */}
         {images.length > 1 && (
-          <div className="absolute bottom-2 right-2 bg-white border border-black px-2 py-1">
+          <div className={`absolute bottom-2 right-2 border border-black px-2 py-1 ${
+            isLightOn ? 'bg-white text-black' : 'bg-black text-white'
+          }`}>
             <span className="text-xs font-mono font-bold uppercase">
               {currentIndex + 1} / {images.length}
             </span>

@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useLightStore } from '@/store/useLightStore'
 
 interface LightboxProps {
   images: string[]
@@ -24,6 +25,8 @@ export default function Lightbox({
   onGoToSlide,
   alt,
 }: LightboxProps) {
+  const isLightOn = useLightStore((state) => state.isLightOn)
+
   // Handle keyboard navigation
   useEffect(() => {
     if (!isOpen) return
@@ -73,14 +76,20 @@ export default function Lightbox({
               {/* Close Button */}
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 z-10 bg-white border-2 border-black px-4 py-2 font-mono font-bold uppercase text-sm hover:bg-black hover:text-white transition-colors"
+                className={`absolute top-4 right-4 z-10 border-2 border-black px-4 py-2 font-mono font-bold uppercase text-sm transition-colors ${
+                  isLightOn 
+                    ? 'bg-white text-black hover:bg-black hover:text-white' 
+                    : 'bg-black text-white hover:bg-white hover:text-black'
+                }`}
                 aria-label="Close lightbox"
               >
                 CLOSE ×
               </button>
 
               {/* Main Image */}
-              <div className="relative bg-white border-2 border-black">
+              <div className={`relative border-2 border-black ${
+                isLightOn ? 'bg-white' : 'bg-black'
+              }`}>
                 <motion.img
                   key={currentIndex}
                   src={images[currentIndex]}
@@ -97,14 +106,22 @@ export default function Lightbox({
                   <>
                     <button
                       onClick={onPrevious}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-white border-2 border-black px-4 py-3 font-mono font-bold uppercase text-lg hover:bg-black hover:text-white transition-colors"
+                      className={`absolute left-4 top-1/2 -translate-y-1/2 border-2 border-black px-4 py-3 font-mono font-bold uppercase text-lg transition-colors ${
+                        isLightOn 
+                          ? 'bg-white text-black hover:bg-black hover:text-white' 
+                          : 'bg-black text-white hover:bg-white hover:text-black'
+                      }`}
                       aria-label="Previous image"
                     >
                       ←
                     </button>
                     <button
                       onClick={onNext}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-white border-2 border-black px-4 py-3 font-mono font-bold uppercase text-lg hover:bg-black hover:text-white transition-colors"
+                      className={`absolute right-4 top-1/2 -translate-y-1/2 border-2 border-black px-4 py-3 font-mono font-bold uppercase text-lg transition-colors ${
+                        isLightOn 
+                          ? 'bg-white text-black hover:bg-black hover:text-white' 
+                          : 'bg-black text-white hover:bg-white hover:text-black'
+                      }`}
                       aria-label="Next image"
                     >
                       →
@@ -114,7 +131,9 @@ export default function Lightbox({
 
                 {/* Image Counter */}
                 {images.length > 1 && (
-                  <div className="absolute bottom-4 right-4 bg-white border-2 border-black px-4 py-2">
+                  <div className={`absolute bottom-4 right-4 border-2 border-black px-4 py-2 ${
+                    isLightOn ? 'bg-white text-black' : 'bg-black text-white'
+                  }`}>
                     <span className="text-sm font-mono font-bold uppercase">
                       {currentIndex + 1} / {images.length}
                     </span>

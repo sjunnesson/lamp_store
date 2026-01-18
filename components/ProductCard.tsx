@@ -16,15 +16,21 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <Link 
       href={`/product/${product.slug.current}`}
-      className="relative block bg-white border-2 border-black shadow-hard rounded-none hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-hover transition-all cursor-pointer"
+      className={`relative block border-2 border-black shadow-hard rounded-none hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-hover transition-all cursor-pointer ${
+        isLightOn ? 'bg-white text-black' : 'bg-black text-white'
+      }`}
     >
       {/* Micro-data Label - Top Left */}
-      <div className="absolute top-2 left-2 z-10 bg-white border border-black px-1.5 py-0.5">
+      <div className={`absolute top-2 left-2 z-10 border border-black px-1.5 py-0.5 ${
+        isLightOn ? 'bg-white text-black' : 'bg-black text-white'
+      }`}>
         <span className="text-xs font-mono font-bold uppercase">FIG-{product._id.slice(-4)}</span>
       </div>
 
       {/* Micro-data Label - Top Right */}
-      <div className="absolute top-2 right-2 z-10 bg-white border border-black px-1.5 py-0.5">
+      <div className={`absolute top-2 right-2 z-10 border border-black px-1.5 py-0.5 ${
+        isLightOn ? 'bg-white text-black' : 'bg-black text-white'
+      }`}>
         <span className="text-xs font-mono font-bold uppercase">QTY:1</span>
       </div>
 

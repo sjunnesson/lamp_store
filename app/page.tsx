@@ -29,7 +29,11 @@ export default function Home() {
       {/* Header Section */}
       <div className="mb-8 border-b-2 border-black pb-4">
         <h1
-          className="text-7xl font-black uppercase tracking-tight cursor-pointer border-2 border-black bg-white p-8 hover:bg-black hover:text-white transition-colors inline-block shadow-hard"
+          className={`text-7xl font-black uppercase tracking-tight cursor-pointer border-2 border-black p-8 transition-colors inline-block shadow-hard ${
+            isLightOn 
+              ? 'bg-white text-black hover:bg-black hover:text-white' 
+              : 'bg-black text-white hover:bg-white hover:text-black'
+          }`}
           onClick={toggle}
         >
           LIGHT / DARK
@@ -39,9 +43,17 @@ export default function Home() {
 
       {/* Products Grid */}
       {loading ? (
-        <div className="text-center py-12 font-mono uppercase">LOADING PRODUCTS...</div>
+        <div className={`text-center py-12 font-mono uppercase ${
+          isLightOn ? 'text-black' : 'text-white'
+        }`}>
+          LOADING PRODUCTS...
+        </div>
       ) : products.length === 0 ? (
-        <div className="text-center py-12 font-mono uppercase">NO PRODUCTS FOUND.</div>
+        <div className={`text-center py-12 font-mono uppercase ${
+          isLightOn ? 'text-black' : 'text-white'
+        }`}>
+          NO PRODUCTS FOUND.
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {products.map((product) => (
