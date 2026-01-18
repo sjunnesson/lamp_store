@@ -4,14 +4,35 @@
 require('dotenv').config({ path: '.env.local' })
 
 // Map NEXT_PUBLIC_ variables to SANITY_STUDIO_ for Studio compatibility
+// Trim values to prevent whitespace issues
 if (process.env.NEXT_PUBLIC_SANITY_PROJECT_ID && !process.env.SANITY_STUDIO_PROJECT_ID) {
-  process.env.SANITY_STUDIO_PROJECT_ID = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
+  const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID.trim()
+  // Validate project ID format
+  if (!/^[a-z0-9-]+$/.test(projectId)) {
+    throw new Error(`Invalid Sanity project ID format: "${projectId}". Project ID can only contain lowercase letters, numbers, and dashes.`)
+  }
+  process.env.SANITY_STUDIO_PROJECT_ID = projectId
 }
 if (process.env.NEXT_PUBLIC_SANITY_DATASET && !process.env.SANITY_STUDIO_DATASET) {
-  process.env.SANITY_STUDIO_DATASET = process.env.NEXT_PUBLIC_SANITY_DATASET
+  process.env.SANITY_STUDIO_DATASET = (process.env.NEXT_PUBLIC_SANITY_DATASET || 'production').trim()
 }
 if (process.env.NEXT_PUBLIC_SANITY_API_VERSION && !process.env.SANITY_STUDIO_API_VERSION) {
-  process.env.SANITY_STUDIO_API_VERSION = process.env.NEXT_PUBLIC_SANITY_API_VERSION
+  process.env.SANITY_STUDIO_API_VERSION = (process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2026-01-17').trim()
+}
+
+// Also trim existing SANITY_STUDIO_ variables if they exist
+if (process.env.SANITY_STUDIO_PROJECT_ID) {
+  const projectId = process.env.SANITY_STUDIO_PROJECT_ID.trim()
+  if (!/^[a-z0-9-]+$/.test(projectId)) {
+    throw new Error(`Invalid Sanity project ID format: "${projectId}". Project ID can only contain lowercase letters, numbers, and dashes.`)
+  }
+  process.env.SANITY_STUDIO_PROJECT_ID = projectId
+}
+if (process.env.SANITY_STUDIO_DATASET) {
+  process.env.SANITY_STUDIO_DATASET = process.env.SANITY_STUDIO_DATASET.trim()
+}
+if (process.env.SANITY_STUDIO_API_VERSION) {
+  process.env.SANITY_STUDIO_API_VERSION = process.env.SANITY_STUDIO_API_VERSION.trim()
 }
 
 // Now run the sanity build
