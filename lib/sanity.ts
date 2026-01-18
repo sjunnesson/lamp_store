@@ -3,50 +3,32 @@ import { createImageUrlBuilder } from '@sanity/image-url';
 import type { SanityImageSource } from '@sanity/image-url';
 
 // Sanity client configuration
-function getSanityConfig() {
-  const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID?.trim();
-  const dataset = (process.env.NEXT_PUBLIC_SANITY_DATASET || 'production').trim();
-  const apiVersion = (process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2026-01-17').trim();
+const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID?.trim();
+const dataset = (process.env.NEXT_PUBLIC_SANITY_DATASET || 'production').trim();
+const apiVersion = (process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2026-01-17').trim();
 
-  // Validate required environment variables
-  if (!projectId) {
-    throw new Error(
-      'Missing required environment variable: NEXT_PUBLIC_SANITY_PROJECT_ID\n' +
-      'Please create a .env.local file with your Sanity project ID.\n' +
-      'Get your project ID from https://www.sanity.io/manage'
-    );
-  }
-
-  // Validate project ID format (only a-z, 0-9, and dashes)
-  if (!/^[a-z0-9-]+$/.test(projectId)) {
-    throw new Error(
-      `Invalid Sanity project ID format: "${projectId}". Project ID can only contain lowercase letters, numbers, and dashes.`
-    );
-  }
-
-  return { projectId, dataset, apiVersion };
+// Validate required environment variables
+if (!projectId) {
+  throw new Error(
+    'Missing required environment variable: NEXT_PUBLIC_SANITY_PROJECT_ID\n' +
+    'Please create a .env.local file with your Sanity project ID.\n' +
+    'Get your project ID from https://www.sanity.io/manage'
+  );
 }
 
-// Create client instance lazily to avoid build-time errors
-let _client: ReturnType<typeof createClient> | null = null;
-
-function getClient() {
-  if (!_client) {
-    const config = getSanityConfig();
-    _client = createClient({
-      projectId: config.projectId,
-      dataset: config.dataset,
-      useCdn: process.env.NODE_ENV === 'production',
-      apiVersion: config.apiVersion,
-    });
-  }
-  return _client;
+// Validate project ID format (only a-z, 0-9, and dashes)
+if (!/^[a-z0-9-]+$/.test(projectId)) {
+  throw new Error(
+    `Invalid Sanity project ID format: "${projectId}". Project ID can only contain lowercase letters, numbers, and dashes.`
+  );
 }
 
-export const client = new Proxy({} as ReturnType<typeof createClient>, {
-  get(_, prop) {
-    return getClient()[prop as keyof ReturnType<typeof createClient>];
-  }
+// Create client instance
+export const client = createClient({
+  projectId,
+  dataset,
+  useCdn: process.env.NODE_ENV === 'production',
+  apiVersion,
 });
 
 // Image URL builder
